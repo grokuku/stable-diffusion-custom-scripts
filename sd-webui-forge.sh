@@ -6,7 +6,7 @@ export PATH="/home/abc/miniconda3/bin:$PATH"
 # Set Variables and parameters
 
 # Name of the custom WebUI (will be used for the program itself and the output directory)
-export CustomNAME="FooocusMRE"
+export CustomNAME="sd-webui-forge"
 
 # Name of the base folder for custom WebUIs
 export CustomBASE="00-custom"
@@ -15,7 +15,7 @@ export CustomBASE="00-custom"
 export CustomPATH="/config/$CustomBASE/$CustomNAME"
 
 # Parameters to pass at launch
-export CustomPARAMETERS="--listen 0.0.0.0 --port 9000"
+export CustomPARAMETERS="--listen --port 9000 --enable-insecure-extension-access --xformers --api --medvram"
 
 # Folders creation (Program files and output)
 mkdir -p ${CustomPATH}
@@ -27,31 +27,50 @@ if [ ! -d ${CustomPATH}/env ]; then
 fi
 source activate ${CustomPATH}/env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.10 pip --solver=libmamba -y
-conda install -c nvidia cuda-cudart --solver=libmamba -y
+conda install -c conda-forge git python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
 # Clone/update program files
-if [ ! -d ${CustomPATH}/Fooocus-MRE ]; then
-    cd "${CustomPATH}" && git clone https://github.com/MoonRide303/Fooocus-MRE.git
+if [ ! -d ${CustomPATH}/$CustomNAME ]; then
+    cd "${CustomPATH}" && git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git
 fi
-cd ${CustomPATH}/Fooocus-MRE
-git pull -X ours
 
-# Using the sl_folder to create symlinks needed to use the common models folder
-sl_folder ${CustomPATH}/Fooocus-MRE/models checkpoints ${BASE_DIR}/models stable-diffusion
-sl_folder ${CustomPATH}/Fooocus-MRE/models loras ${BASE_DIR}/models lora
-sl_folder ${CustomPATH}/Fooocus-MRE/models vae ${BASE_DIR}/models vae
-sl_folder ${CustomPATH}/Fooocus-MRE/models embeddings ${BASE_DIR}/models embeddings
-sl_folder ${CustomPATH}/Fooocus-MRE/models hypernetworks ${BASE_DIR}/models hypernetwork
-sl_folder ${CustomPATH}/Fooocus-MRE/models upscale_models ${BASE_DIR}/models upscale
-sl_folder ${CustomPATH}/Fooocus-MRE/models clip_vision ${BASE_DIR}/models clip_vision
-sl_folder ${CustomPATH}/Fooocus-MRE/models controlnet ${BASE_DIR}/models controlnet
+cd ${CustomPATH}/$CustomNAME
+if [ -d "${CustomPATH}/$CustomNAME/webui/venv" ]; then
+    # check if remote is ahead of local
+    # https://stackoverflow.com/a/25109122/1469797
+    if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
+    sed 's/\// /g') | cut -f1) ]; then
+         echo "Local branch up-to-date, keeping existing venv"
+      else
+        if [ "$CLEAN_ENV" = "true" ]; then
+          echo "Forced wiping venv for clean packages install"
+        else
+          echo "Remote branch is ahead. Wiping venv for clean packages install"
+        fi
+        rm -rf ${CustomPATH}/$CustomNAME/webui/venv
+        git pull -X ours
+    fi
+fi
 
-sl_folder ${CustomPATH}/Fooocus-MRE outputs ${BASE_DIR}/outputs/$CustomBASE $CustomNAME
+# Merge Models, vae, lora, and hypernetworks, and outputs
+# Ignore move errors if they occur
+sl_folder ${CustomPATH}/$CustomNAME/webui/models Stable-diffusion ${BASE_DIR}/models stable-diffusion
+sl_folder ${CustomPATH}/$CustomNAME/webui/models hypernetworks ${BASE_DIR}/models hypernetwork
+sl_folder ${CustomPATH}/$CustomNAME/webui/models Lora ${BASE_DIR}/models lora
+sl_folder ${CustomPATH}/$CustomNAME/webui/models VAE ${BASE_DIR}/models vae
+sl_folder ${CustomPATH}/$CustomNAME/webui embeddings ${BASE_DIR}/models embeddings
+sl_folder ${CustomPATH}/$CustomNAME/webui/models ESRGAN ${BASE_DIR}/models upscale
+sl_folder ${CustomPATH}/$CustomNAME/webui/models BLIP ${BASE_DIR}/models blip
+sl_folder ${CustomPATH}/$CustomNAME/webui/models Codeformer ${BASE_DIR}/models codeformer
+sl_folder ${CustomPATH}/$CustomNAME/webui/models GFPGAN ${BASE_DIR}/models gfpgan
+sl_folder ${CustomPATH}/$CustomNAME/webui/models LDSR ${BASE_DIR}/models ldsr
 
-# installation of requirements
-cd ${CustomPATH}/Fooocus-MRE
-pip install -r requirements_versions.txt
+sl_folder ${CustomPATH}/$CustomNAME/webui outputs ${BASE_DIR}/outputs/$CustomBASE $CustomNAME
 
-# Launch Fooocus-MRE
-python launch.py ${CustomPARAMETERS}
+cd ${CustomPATH}/$CustomNAME/webui
+source venv/bin/activate
+export PATH="${CustomPATH}/$CustomNAME/webui/venv/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
+pip install --upgrade pip
+
+# Launch SD-WEBUI-FORGE
+bash webui.sh ${CustomPARAMETERS}
