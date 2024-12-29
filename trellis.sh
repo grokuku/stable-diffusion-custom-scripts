@@ -64,7 +64,8 @@ pip install plyfile \
 			gradio_litmodel3d==0.0.1 \
 			pymeshfix \
 			igraph \
-			safetensors
+			safetensors \
+   			sageattention
 
 #run webui
 export GRADIO_SERVER_NAME="0.0.0.0"
