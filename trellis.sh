@@ -40,7 +40,7 @@ if [ ! -d ${CustomPATH}/env ]; then
 fi
 source activate ${CustomPATH}/env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.10 pip --solver=libmamba -y
+conda install -c conda-forge git python=3.11 pip --solver=libmamba -y
 conda install -c nvidia cuda-cudart --solver=libmamba -y
 
 cd ${CustomPATH}
