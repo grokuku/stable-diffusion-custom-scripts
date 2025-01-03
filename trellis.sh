@@ -64,7 +64,9 @@ pip install plyfile \
 			pymeshfix \
 			igraph \
 			safetensors \
-   			sageattention
+   			sageattention \
+			imageio==2.19.5 \
+			imageio-ffmpeg==0.4.7
 pip install git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8
 
 #run webui
