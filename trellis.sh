@@ -66,6 +66,7 @@ pip install plyfile \
 			igraph \
 			safetensors \
    			sageattention
+pip install git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8
 
 #run webui
 export GRADIO_SERVER_NAME="0.0.0.0"
