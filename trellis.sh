@@ -57,7 +57,6 @@ pip install plyfile \
 			easydict \
 			rembg \
 			onnxruntime-gpu \
-			utils3D \
 			xatlas \
 			pyvista \
 			gradio==4.44.1 \
