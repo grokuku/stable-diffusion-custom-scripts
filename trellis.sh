@@ -66,8 +66,8 @@ pip install plyfile \
 			safetensors \
    			sageattention \
 			imageio==2.19.5 \
-			imageio-ffmpeg==0.4.7 \
-   			utils3D
+			imageio-ffmpeg==0.4.7
+pip install git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8 --no-cache
 
 #run webui
 export GRADIO_SERVER_NAME="0.0.0.0"
